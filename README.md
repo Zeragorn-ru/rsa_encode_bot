@@ -9,7 +9,7 @@
 # Настройка
 
 Для настройки создайте в папке с ботом .env файл со следующим содержанием:
-"""
-BOT_TOKEN=<token>
-ADMINS=<1_admin_user_id>,<2_admin_user_id>,<3_admin_user_id>
-"""
+
+  BOT_TOKEN=<token>
+  ADMINS=<1_admin_user_id>,<2_admin_user_id>,<3_admin_user_id>
+
