@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from os import getenv
 from io import BytesIO
+import asyncio
 
 import pandas as pd
 from aiogram import Bot, Dispatcher, Router, types
@@ -14,12 +15,12 @@ from filters import ReplyToPrivateKey, ReplyToPublicKey
 
 dotenv_check()
 load_dotenv()
-bot = Bot(token=getenv("BOT_TOKEN"))
-admins = [int(x) for x in getenv("ADMINS").split(",") if x.strip()] if getenv("ADMINS") else []
+bot: Bot = Bot(token=getenv("BOT_TOKEN"))
+admins: list = [int(x) for x in getenv("ADMINS").split(",") if x.strip()] if getenv("ADMINS") else []
 db_check()
 
-dp = Dispatcher()
-router = Router()
+dp: Dispatcher = Dispatcher()
+router: Router = Router()
 
 # Команда /start
 @router.message(Command("start"))
@@ -149,9 +150,15 @@ async def stats_command(message: types.Message):
         caption="Статистика использования"
     )
 
-# Регистрация и запуск
-dp.include_router(router)
+async def on_startup() -> None:
+    print("Бот запущен")
+    for admin in admins:
+        await bot.send_message(admin, "Бот запущен")
+
+async def main() -> None:
+    dp.startup.register(on_startup)
+    dp.include_router(router)
+    await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    print("Бот успешно запущен!")
-    dp.run_polling(bot, skip_updates=True)
+    asyncio.run(main())
