@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
-import sqlite3
 from os import getenv
 from io import BytesIO
 
@@ -9,54 +7,19 @@ from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters import Command
 from dotenv import load_dotenv
 
+from dotenv_check import dotenv_check
+from db_handler import db_check, update_stats
 from crypt import generate_rsa_keys, encrypt_text, decrypt_text, is_pem_key
 from filters import ReplyToPrivateKey, ReplyToPublicKey
 
-# Проверка и создание файла .env
-if not os.path.exists(".env"):
-    with open(".env", "w", encoding="utf-8") as file:
-        token = input("Введите токен бота: ")
-        admins = input("Введите user_id админов через запятую (или оставьте пустым): ")
-        file.write(f"BOT_TOKEN={token}\nADMINS={admins.strip()}\n")
-    print("Файл .env создан")
-
-# Загрузка переменных из .env
+dotenv_check()
 load_dotenv()
 bot = Bot(token=getenv("BOT_TOKEN"))
-admins = [int(x) for x in os.getenv("ADMINS").split(",") if x.strip()] if os.getenv("ADMINS") else []
-
-
-# Проверка и создание базы данных
-if not os.path.exists("stats.db"):
-    conn = sqlite3.connect("stats.db")
-    c = conn.cursor()
-    c.execute("CREATE TABLE stats ("
-              "user_id INTEGER PRIMARY KEY, "
-              "generate_count INTEGER DEFAULT 0, "
-              "encrypt_count INTEGER DEFAULT 0, "
-              "decrypt_count INTEGER DEFAULT 0)")
-    conn.commit()
-    conn.close()
-    print("База stats.db создана")
+admins = [int(x) for x in getenv("ADMINS").split(",") if x.strip()] if getenv("ADMINS") else []
+db_check()
 
 dp = Dispatcher()
 router = Router()
-
-
-# Обновление статистики
-def update_stats(user_id, command):
-    conn = sqlite3.connect("stats.db")
-    c = conn.cursor()
-    c.execute("INSERT OR IGNORE INTO stats (user_id) VALUES (?)", (user_id,))
-    if command == "generate":
-        c.execute("UPDATE stats SET generate_count = generate_count + 1 WHERE user_id = ?", (user_id,))
-    elif command == "encrypt":
-        c.execute("UPDATE stats SET encrypt_count = encrypt_count + 1 WHERE user_id = ?", (user_id,))
-    elif command == "decrypt":
-        c.execute("UPDATE stats SET decrypt_count = decrypt_count + 1 WHERE user_id = ?", (user_id,))
-    conn.commit()
-    conn.close()
-
 
 # Команда /start
 @router.message(Command("start"))

@@ -7,13 +7,13 @@ from Cryptodome.Random import get_random_bytes
 
 
 # Функции шифрования и генерации ключей
-def generate_rsa_keys():
+def generate_rsa_keys() -> (str, str):
     key = RSA.generate(2048)
     private_key = key.export_key().decode()
     public_key = key.publickey().export_key().decode()
     return public_key, private_key
 
-def encrypt_text(text, public_key):
+def encrypt_text(text: str, public_key: str) -> str:
     aes_key = get_random_bytes(32)
     rsa_cipher = PKCS1_OAEP.new(RSA.import_key(public_key))
     encrypted_aes_key = rsa_cipher.encrypt(aes_key)
@@ -28,7 +28,7 @@ def encrypt_text(text, public_key):
         encrypted_aes_key + aes_cipher.nonce + tag + ciphertext
     ).decode()
 
-def decrypt_text(encrypted_data, private_key):
+def decrypt_text(encrypted_data: str, private_key: str) -> str:
     try:
         encrypted_data = base64.b64decode(encrypted_data)
         rsa_key_size = 256
@@ -43,7 +43,7 @@ def decrypt_text(encrypted_data, private_key):
     except Exception:
         return "Это не текст"
 
-def is_pem_key(text):
+def is_pem_key(text: str) -> bool:
     return any(x in text for x in [
         "-----BEGIN PUBLIC KEY-----",
         "-----BEGIN PRIVATE KEY-----",
