@@ -5,7 +5,7 @@ if [ ! -e ./.env ]; then
 fi
 
 if [ ! -e ./.rsa_encode_bot_env ]; then
-  python3.12 -m venv .rsa_encode_bot_env
+  python3.13 -m venv .rsa_encode_bot_env
   source .rsa_encode_bot_env/bin/activate
   pip install -r req.txt
   deactivate
